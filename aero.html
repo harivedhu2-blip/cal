@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aerospace Engineering Calculator</title>
+
+<style>
+body{
+    margin:0;
+    background:#0b1220;
+    font-family:Arial;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.card{
+    background:#101c33;
+    padding:25px;
+    width:420px;
+    border-radius:12px;
+    box-shadow:0 0 15px black;
+}
+
+h2{text-align:center;margin-bottom:10px}
+
+select,input,button{
+    width:100%;
+    padding:10px;
+    border-radius:6px;
+    border:none;
+    margin:7px 0;
+    font-size:15px;
+}
+
+button{
+    background:#22c55e;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{background:#16a34a}
+
+.label{font-size:13px;color:#94a3b8}
+
+.result{
+    text-align:center;
+    font-size:18px;
+    margin-top:10px;
+    color:#38bdf8;
+}
+
+.info{
+    font-size:12px;
+    color:#cbd5e1;
+    margin-top:6px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>✈ Aerospace Calculator</h2>
+
+<div class="label">Select Equation</div>
+<select id="equation" onchange="buildInputs()">
+    <option value="lift">Lift Equation</option>
+    <option value="drag">Drag Equation</option>
+    <option value="jet">Jet Engine Thrust</option>
+    <option value="rocket">Rocket Thrust</option>
+    <option value="mach">Mach Number</option>
+    <option value="reynolds">Reynolds Number</option>
+</select>
+
+<div class="label">Select Unknown</div>
+<select id="unknown" onchange="buildInputs()"></select>
+
+<div id="inputs"></div>
+
+<button onclick="calculate()">CALCULATE</button>
+
+<div class="result" id="result"></div>
+<div class="info" id="info"></div>
+
+</div>
+
+<script>
+
+const equations = {
+
+lift:{
+vars:["L","rho","V","S","Cl"],
+units:{L:"N",rho:"kg/m³",V:"m/s",S:"m²",Cl:"-"}
+},
+
+drag:{
+vars:["D","rho","V","S","Cd"],
+units:{D:"N",rho:"kg/m³",V:"m/s",S:"m²",Cd:"-"}
+},
+
+jet:{
+vars:["T","mdot","Ve","V0"],
+units:{T:"N",mdot:"kg/s",Ve:"m/s",V0:"m/s"}
+},
+
+rocket:{
+vars:["T","mdot","Ve","Pe","Pa","Ae"],
+units:{T:"N",mdot:"kg/s",Ve:"m/s",Pe:"Pa",Pa:"Pa",Ae:"m²"}
+},
+
+mach:{
+vars:["M","V","a"],
+units:{M:"-",V:"m/s",a:"m/s"}
+},
+
+reynolds:{
+vars:["Re","rho","V","L","mu"],
+units:{Re:"-",rho:"kg/m³",V:"m/s",L:"m",mu:"kg/m·s"}
+}
+
+};
+
+function buildInputs(){
+
+let eq=document.getElementById("equation").value;
+let unk=document.getElementById("unknown");
+let box=document.getElementById("inputs");
+
+unk.innerHTML="";
+equations[eq].vars.forEach(v=>{
+    let op=document.createElement("option");
+    op.value=v;
+    op.innerText="Find "+v;
+    unk.appendChild(op);
+});
+
+box.innerHTML="";
+equations[eq].vars.forEach(v=>{
+    if(v!==unk.value){
+        box.innerHTML+=`<input id="${v}" placeholder="${v} (${equations[eq].units[v]})" type="number" step="any">`;
+    }
+});
+
+}
+
+function calculate(){
+
+let eq=document.getElementById("equation").value;
+let u=document.getElementById("unknown").value;
+let v={};
+
+equations[eq].vars.forEach(x=>{
+    let e=document.getElementById(x);
+    if(e) v[x]=parseFloat(e.value);
+});
+
+let ans=0;
+
+if(eq==="lift"){
+    if(u==="L") ans=0.5*v.rho*v.V*v.V*v.S*v.Cl;
+    if(u==="Cl") ans=v.L/(0.5*v.rho*v.V*v.V*v.S);
+}
+
+if(eq==="drag"){
+    if(u==="D") ans=0.5*v.rho*v.V*v.V*v.S*v.Cd;
+}
+
+if(eq==="jet"){
+    if(u==="T") ans=v.mdot*(v.Ve-v.V0);
+}
+
+if(eq==="rocket"){
+    if(u==="T") ans=v.mdot*v.Ve+(v.Pe-v.Pa)*v.Ae;
+}
+
+if(eq==="mach"){
+    if(u==="M") ans=v.V/v.a;
+}
+
+if(eq==="reynolds"){
+    if(u==="Re") ans=(v.rho*v.V*v.L)/v.mu;
+}
+
+document.getElementById("result").innerHTML="Result = "+ans.toFixed(4);
+document.getElementById("info").innerHTML="Units: "+equations[eq].units[u];
+
+}
+
+buildInputs();
+
+</script>
+
+</body>
+</html>
